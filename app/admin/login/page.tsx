@@ -1,51 +1,39 @@
 'use client';
 
-import { signIn, useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
+import { signIn } from 'next-auth/react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { data: session } = useSession();
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (session?.user) {
-      router.push('/admin');
-    }
-  }, [session, router]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
 
     const formData = new FormData(e.currentTarget);
-    
+
     try {
-      const res = await signIn('credentials', {
+      const result = await signIn('credentials', {
         username: formData.get('username'),
         password: formData.get('password'),
         redirect: false,
       });
 
-      if (res?.error) {
+      if (result?.error) {
         setError('Invalid credentials');
+      } else if (result?.ok) {
+        router.push('/admin');
       }
-      // No need to manually redirect - useEffect will handle it
     } catch (error) {
       setError('An error occurred');
     } finally {
       setLoading(false);
     }
   };
-
-  // Don't render form if already authenticated
-  if (session?.user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

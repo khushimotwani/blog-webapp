@@ -1,32 +1,21 @@
 import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
 
-// This middleware will handle /admin/* routes
-export default withAuth(
-  function middleware(req) {
-    // Allow access to login page
-    if (req.nextUrl.pathname === "/admin/login") {
-      return NextResponse.next();
-    }
-
-    // Check for admin role on other admin pages
-    if (req.nextUrl.pathname.startsWith("/admin") && req.nextauth.token?.role !== "admin") {
-      return NextResponse.redirect(new URL("/admin/login", req.url));
-    }
+// Simple middleware that protects all /admin routes except login
+export default withAuth({
+  pages: {
+    signIn: "/admin/login",
   },
-  {
-    callbacks: {
-      authorized: ({ req, token }) => {
-        // Allow access to login page without token
-        if (req.nextUrl.pathname === "/admin/login") {
-          return true;
-        }
-        // Require token for all other admin routes
-        return !!token;
-      },
+  callbacks: {
+    authorized: ({ req, token }) => {
+      // Allow access to login page
+      if (req.nextUrl.pathname === "/admin/login") {
+        return true;
+      }
+      // Require admin role for all other admin routes
+      return token?.role === "admin";
     },
-  }
-);
+  },
+});
 
 export const config = {
   matcher: ["/admin/:path*"]

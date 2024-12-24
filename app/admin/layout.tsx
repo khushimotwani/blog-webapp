@@ -1,28 +1,18 @@
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
-import AdminSidebar from '@/components/AdminSidebar';
 import { headers } from 'next/headers';
+import AdminSidebar from '@/components/AdminSidebar';
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession();
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "";
-  const isLoginPage = pathname.includes("/admin/login");
-  
-  // Don't redirect on login page
-  if (!session && !isLoginPage) {
-    redirect('/admin/login');
-  }
-
-  // Don't show admin layout on login page
-  if (isLoginPage) {
+  // Only check if we're on login page
+  const currentPath = (await headers()).get("x-invoke-path") || "";
+  if (currentPath.includes("/admin/login")) {
     return children;
   }
 
+  // Admin layout for all other pages
   return (
     <div className="drawer lg:drawer-open">
       <input id="admin-drawer" type="checkbox" className="drawer-toggle" />
