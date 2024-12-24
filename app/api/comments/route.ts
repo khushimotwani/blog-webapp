@@ -16,12 +16,9 @@ export async function GET(request: Request) {
       );
     }
 
-    const comments = await Comment.find({
-      post: postId,
-      status: 'approved'
-    })
-    .sort({ createdAt: -1 })
-    .select('name content createdAt');
+    const comments = await Comment.find({ post: postId })
+      .sort({ createdAt: -1 })
+      .select('name content createdAt');
 
     return NextResponse.json({ comments });
   } catch (error) {
@@ -46,14 +43,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create comment with pending status
-    const comment = await Comment.create({
-      ...body,
-      status: 'pending'
-    });
+    // Create comment without status
+    const comment = await Comment.create(body);
 
     return NextResponse.json(
-      { message: 'Comment submitted successfully' },
+      { 
+        message: 'Comment posted successfully',
+        comment: {
+          _id: comment._id,
+          name: comment.name,
+          content: comment.content,
+          createdAt: comment.createdAt
+        }
+      },
       { status: 201 }
     );
   } catch (error: any) {

@@ -21,11 +21,6 @@ const CommentSchema = new mongoose.Schema({
     required: [true, 'Please provide a comment'],
     maxlength: [1000, 'Comment cannot be more than 1000 characters']
   },
-  status: {
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending'
-  },
   createdAt: {
     type: Date,
     default: Date.now

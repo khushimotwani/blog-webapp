@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { formatDate } from '@/lib/utils';
+import CommentForm from './CommentForm';
 
 interface Comment {
   _id: string;
@@ -34,6 +35,10 @@ export default function CommentsList({ postId }: CommentsListProps) {
     fetchComments();
   }, [postId]);
 
+  const addNewComment = (comment: Comment) => {
+    setComments(prevComments => [comment, ...prevComments]);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -42,27 +47,29 @@ export default function CommentsList({ postId }: CommentsListProps) {
     );
   }
 
-  if (comments.length === 0) {
-    return (
-      <div className="text-center py-8 text-base-content/70">
-        No comments yet. Be the first to comment!
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {comments.map((comment) => (
-        <div key={comment._id} className="bg-base-200 p-4 rounded-lg">
-          <div className="flex justify-between items-start mb-2">
-            <div className="font-semibold">{comment.name}</div>
-            <div className="text-sm text-base-content/70">
-              {formatDate(comment.createdAt)}
-            </div>
+      <CommentForm postId={postId} onCommentSubmitted={addNewComment} />
+      
+      <div className="space-y-6">
+        {comments.length === 0 ? (
+          <div className="text-center py-8 text-base-content/70">
+            No comments yet. Be the first to comment!
           </div>
-          <p className="whitespace-pre-line">{comment.content}</p>
-        </div>
-      ))}
+        ) : (
+          comments.map((comment) => (
+            <div key={comment._id} className="bg-base-200 p-4 rounded-lg">
+              <div className="flex justify-between items-start mb-2">
+                <div className="font-semibold">{comment.name}</div>
+                <div className="text-sm text-base-content/70">
+                  {formatDate(comment.createdAt)}
+                </div>
+              </div>
+              <p className="whitespace-pre-line">{comment.content}</p>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 } 

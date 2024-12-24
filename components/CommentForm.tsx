@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface CommentFormProps {
   postId: string;
-  onCommentSubmitted?: () => void;
+  onCommentSubmitted?: (comment: any) => void;
 }
 
 export default function CommentForm({ postId, onCommentSubmitted }: CommentFormProps) {
@@ -15,13 +15,11 @@ export default function CommentForm({ postId, onCommentSubmitted }: CommentFormP
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
-    setSuccess(false);
 
     try {
       const res = await fetch('/api/comments', {
@@ -40,10 +38,10 @@ export default function CommentForm({ postId, onCommentSubmitted }: CommentFormP
         throw new Error(data.error || 'Failed to submit comment');
       }
 
-      setSuccess(true);
+      const data = await res.json();
       setFormData({ name: '', email: '', content: '' });
       if (onCommentSubmitted) {
-        onCommentSubmitted();
+        onCommentSubmitted(data.comment);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -59,12 +57,6 @@ export default function CommentForm({ postId, onCommentSubmitted }: CommentFormP
       {error && (
         <div className="alert alert-error mb-4">
           <span>{error}</span>
-        </div>
-      )}
-      
-      {success && (
-        <div className="alert alert-success mb-4">
-          <span>Comment submitted successfully! It will be visible after review.</span>
         </div>
       )}
 
@@ -120,7 +112,7 @@ export default function CommentForm({ postId, onCommentSubmitted }: CommentFormP
           {submitting ? (
             <span className="loading loading-spinner loading-sm"></span>
           ) : (
-            'Submit Comment'
+            'Post Comment'
           )}
         </button>
       </form>
