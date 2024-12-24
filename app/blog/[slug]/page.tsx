@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import BlogContent from '@/components/BlogContent';
 import Link from 'next/link';
+import CommentForm from '@/components/CommentForm';
+import CommentsList from '@/components/CommentsList';
 
 export default function BlogPost({ params }: { params: { slug: string } }) {
   const [post, setPost] = useState<any>(null);
@@ -59,7 +61,22 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
           ← Back to Blog
         </Link>
         
-        <BlogContent post={post} />
+        {post && <BlogContent post={post} />}
+
+        {/* Comments Section */}
+        {post && (
+          <div className="mt-12 space-y-8">
+            <h2 className="text-2xl font-bold">Comments</h2>
+            <CommentsList postId={post._id} />
+            <CommentForm 
+              postId={post._id}
+              onCommentSubmitted={() => {
+                // Optionally refresh comments list
+                window.location.reload();
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
