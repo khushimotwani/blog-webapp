@@ -6,10 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "init-admin": "bun run scripts/init-admin.ts"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.15",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^2.4.3",
     "daisyui": "^4.12.22",
+    "express-rate-limit": "^7.5.0",
     "mongoose": "^8.9.2",
     "next": "15.1.2",
     "react": "^19.0.0",
