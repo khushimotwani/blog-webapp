@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",
+    "@tiptap/extension-image": "^2.10.4",
+    "@tiptap/extension-link": "^2.10.4",
+    "@tiptap/react": "^2.10.4",
+    "@tiptap/starter-kit": "^2.10.4",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^2.4.3",
     "daisyui": "^4.12.22",

@@ -14,17 +14,39 @@ export async function GET(request: Request) {
     await connectDB();
     
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10');
     const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const status = searchParams.get('status');
+    const search = searchParams.get('search');
+    const tag = searchParams.get('tag');
+
+    // Build query
+    const query: any = {};
+    
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (tag) {
+      query.tags = { $in: [new RegExp(tag, 'i')] };
+    }
+
     const skip = (page - 1) * limit;
 
     const [posts, total] = await Promise.all([
-      Post.find({})
+      Post.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('title status createdAt'),
-      Post.countDocuments()
+        .select('title status tags createdAt'),
+      Post.countDocuments(query)
     ]);
 
     return NextResponse.json({
