@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import AdminSidebar from '@/components/AdminSidebar';
+import { headers } from 'next/headers';
 
 export default async function AdminLayout({
   children,
@@ -8,16 +9,24 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession();
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isLoginPage = pathname.includes("/admin/login");
   
-  if (!session) {
+  // Don't redirect on login page
+  if (!session && !isLoginPage) {
     redirect('/admin/login');
+  }
+
+  // Don't show admin layout on login page
+  if (isLoginPage) {
+    return children;
   }
 
   return (
     <div className="drawer lg:drawer-open">
       <input id="admin-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content p-4">
-        {/* Page content */}
         {children}
       </div> 
       <div className="drawer-side">

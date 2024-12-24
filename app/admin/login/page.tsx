@@ -1,15 +1,27 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const { data: session } = useSession();
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (session?.user) {
+      router.push('/admin');
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     const formData = new FormData(e.currentTarget);
     
     try {
@@ -21,14 +33,19 @@ export default function LoginPage() {
 
       if (res?.error) {
         setError('Invalid credentials');
-      } else {
-        router.push('/admin');
-        router.refresh();
       }
+      // No need to manually redirect - useEffect will handle it
     } catch (error) {
       setError('An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Don't render form if already authenticated
+  if (session?.user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -52,6 +69,7 @@ export default function LoginPage() {
                 name="username"
                 className="input input-bordered"
                 required
+                disabled={loading}
               />
             </div>
             
@@ -64,12 +82,21 @@ export default function LoginPage() {
                 name="password"
                 className="input input-bordered"
                 required
+                disabled={loading}
               />
             </div>
 
             <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary">
-                Login
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="loading loading-spinner loading-sm"></span>
+                ) : (
+                  'Login'
+                )}
               </button>
             </div>
           </form>
