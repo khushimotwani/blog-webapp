@@ -19,6 +19,7 @@
     "bcryptjs": "^2.4.3",
     "daisyui": "^4.12.22",
     "express-rate-limit": "^7.5.0",
+    "lru-cache": "^11.0.2",
     "mongoose": "^8.9.2",
     "next": "15.1.2",
     "next-auth": "^4.24.11",

@@ -1,30 +1,40 @@
 import mongoose from 'mongoose';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MONGODB_URI to .env.local');
+declare global {
+  var mongoose: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+  };
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-let cached = (global as any).mongoose;
-
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+if (!global.mongoose) {
+  global.mongoose = {
+    conn: null,
+    promise: null,
+  };
 }
 
-async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
+export default async function connectDB(): Promise<typeof mongoose> {
+  if (!process.env.MONGODB_URI) {
+    throw new Error('Please add your MongoDB URI to .env.local');
   }
 
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => {
-      return mongoose;
+  if (global.mongoose.conn) {
+    return global.mongoose.conn as unknown as typeof mongoose;
+  }
+
+  if (!global.mongoose.promise) {
+    global.mongoose.promise = mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 2000,
     });
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
-}
+  try {
+    global.mongoose.conn = await global.mongoose.promise;
+  } catch (error) {
+    global.mongoose.promise = null;
+    throw error;
+  }
 
-export default connectDB; 
+  return global.mongoose.conn;
+} 
