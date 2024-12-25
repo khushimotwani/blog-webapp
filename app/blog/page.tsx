@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import BlogCard from '@/components/BlogCard';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function BlogPage() {
+function BlogContent() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
@@ -36,18 +36,14 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-4 md:p-8">
-        <div className="flex justify-center items-center">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
+      <div className="flex justify-center items-center">
+        <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <h1 className="text-4xl font-bold mb-8">Blog Posts</h1>
-      
+    <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {posts.map((post: any) => (
           <BlogCard key={post.slug} post={post} />
@@ -70,6 +66,22 @@ export default function BlogPage() {
           ))}
         </div>
       )}
+    </>
+  );
+}
+
+export default function BlogPage() {
+  return (
+    <div className="min-h-screen p-4 md:p-8">
+      <h1 className="text-4xl font-bold mb-8">Blog Posts</h1>
+      
+      <Suspense fallback={
+        <div className="flex justify-center items-center">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      }>
+        <BlogContent />
+      </Suspense>
     </div>
   );
 } 

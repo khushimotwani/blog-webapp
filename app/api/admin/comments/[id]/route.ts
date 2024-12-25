@@ -1,17 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import connectDB from '@/lib/mongodb';
 import Comment from '@/models/Comment';
 
-interface RouteParams {
+type Context = {
   params: {
     id: string;
   };
-}
+};
 
 export async function PUT(
-  request: Request,
-  { params }: RouteParams
+  req: NextRequest,
+  context: Context
 ) {
   try {
     const session = await getServerSession();
@@ -20,8 +20,8 @@ export async function PUT(
     }
 
     await connectDB();
-    const { id } = params;
-    const body = await request.json();
+    const { id } = context.params;
+    const body = await req.json();
 
     const comment = await Comment.findByIdAndUpdate(
       id,
@@ -47,8 +47,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: RouteParams
+  req: NextRequest,
+  context: Context
 ) {
   try {
     const session = await getServerSession();
@@ -57,7 +57,7 @@ export async function DELETE(
     }
 
     await connectDB();
-    const { id } = params;
+    const { id } = context.params;
 
     const comment = await Comment.findByIdAndDelete(id);
 
