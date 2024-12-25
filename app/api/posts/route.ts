@@ -7,12 +7,12 @@ export async function GET(request: Request) {
     await connectDB();
     
     const { searchParams } = new URL(request.url);
-    const limit = Number(searchParams.get('limit')) || 5; // Default to 5 posts
+    const limit = Number(searchParams.get('limit')) || 5;
     
     const posts = await Post.find({ status: 'published' })
       .sort({ createdAt: -1 })
       .limit(limit)
-      .select('title excerpt slug createdAt');
+      .select('title excerpt slug createdAt tags');
 
     return NextResponse.json({ posts });
   } catch (error) {
