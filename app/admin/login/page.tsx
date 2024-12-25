@@ -1,13 +1,20 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (session) {
+      router.push('/admin');
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,6 +33,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Invalid credentials');
       } else if (result?.ok) {
+        router.refresh();
         router.push('/admin');
       }
     } catch (error) {
@@ -34,6 +42,14 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  if (status === 'loading' || session) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
