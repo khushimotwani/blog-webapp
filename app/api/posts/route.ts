@@ -7,29 +7,19 @@ export async function GET(request: Request) {
     await connectDB();
     
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '6');
-    const tag = searchParams.get('tag');
+    const limit = Number(searchParams.get('limit')) || 5; // Default to 5 posts
     
-    const query = tag ? { tags: tag, status: 'published' } : { status: 'published' };
-    
-    const skip = (page - 1) * limit;
-    
-    const posts = await Post.find(query)
+    const posts = await Post.find({ status: 'published' })
       .sort({ createdAt: -1 })
-      .skip(skip)
       .limit(limit)
-      .select('title excerpt slug featuredImage tags createdAt');
-      
-    const total = await Post.countDocuments(query);
-    
-    return NextResponse.json({
-      posts,
-      total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page
-    });
+      .select('title excerpt slug createdAt');
+
+    return NextResponse.json({ posts });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Error fetching posts:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch posts' },
+      { status: 500 }
+    );
   }
 } 
