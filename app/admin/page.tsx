@@ -10,9 +10,20 @@ interface DashboardStats {
   draftPosts: number;
 }
 
+interface Post {
+  _id: string;
+  title: string;
+  status: 'draft' | 'published';
+  createdAt: string;
+}
+
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentPosts, setRecentPosts] = useState([]);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPosts: 0,
+    publishedPosts: 0,
+    draftPosts: 0
+  });
+  const [recentPosts, setRecentPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,9 +38,10 @@ export default function AdminDashboard() {
         const postsData = await postsRes.json();
         
         setStats(statsData);
-        setRecentPosts(postsData.posts);
+        setRecentPosts(postsData.posts || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setRecentPosts([]);
       } finally {
         setLoading(false);
       }
@@ -54,15 +66,15 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="stat bg-base-100 rounded-box">
                 <div className="stat-title">Total Posts</div>
-                <div className="stat-value">{stats?.totalPosts}</div>
+                <div className="stat-value">{stats?.totalPosts || 0}</div>
               </div>
               <div className="stat bg-base-100 rounded-box">
                 <div className="stat-title">Published</div>
-                <div className="stat-value">{stats?.publishedPosts}</div>
+                <div className="stat-value">{stats?.publishedPosts || 0}</div>
               </div>
               <div className="stat bg-base-100 rounded-box">
                 <div className="stat-title">Drafts</div>
-                <div className="stat-value">{stats?.draftPosts}</div>
+                <div className="stat-value">{stats?.draftPosts || 0}</div>
               </div>
             </div>
 
@@ -75,41 +87,47 @@ export default function AdminDashboard() {
                 </Link>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Status</th>
-                      <th>Created</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentPosts.map((post: any) => (
-                      <tr key={post._id}>
-                        <td>{post.title}</td>
-                        <td>
-                          <span className={`badge ${
-                            post.status === 'published' ? 'badge-success' : 'badge-ghost'
-                          }`}>
-                            {post.status}
-                          </span>
-                        </td>
-                        <td>{new Date(post.createdAt).toLocaleDateString()}</td>
-                        <td>
-                          <Link 
-                            href={`/admin/posts/${post._id}`}
-                            className="btn btn-sm btn-ghost"
-                          >
-                            Edit
-                          </Link>
-                        </td>
+              {recentPosts.length === 0 ? (
+                <div className="text-center py-8 text-base-content/70">
+                  No posts found.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {recentPosts.map((post) => (
+                        <tr key={post._id}>
+                          <td>{post.title}</td>
+                          <td>
+                            <span className={`badge ${
+                              post.status === 'published' ? 'badge-success' : 'badge-ghost'
+                            }`}>
+                              {post.status}
+                            </span>
+                          </td>
+                          <td>{new Date(post.createdAt).toLocaleDateString()}</td>
+                          <td>
+                            <Link 
+                              href={`/admin/posts/${post._id}`}
+                              className="btn btn-sm btn-ghost"
+                            >
+                              Edit
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </>
         )}

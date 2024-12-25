@@ -6,7 +6,6 @@ import Post from '@/models/Post';
 export async function GET(request: Request) {
   try {
     const session = await getServerSession();
-    
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -14,50 +13,22 @@ export async function GET(request: Request) {
     await connectDB();
     
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = Number(searchParams.get('limit')) || 10;
     const status = searchParams.get('status');
-    const search = searchParams.get('search');
-    const tag = searchParams.get('tag');
-
-    // Build query
-    const query: any = {};
     
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-    
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    if (tag) {
-      query.tags = { $in: [new RegExp(tag, 'i')] };
-    }
+    // Build query based on status
+    const query = status && status !== 'all' ? { status } : {};
 
-    const skip = (page - 1) * limit;
+    const posts = await Post.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select('title status createdAt');
 
-    const [posts, total] = await Promise.all([
-      Post.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .select('title status tags createdAt'),
-      Post.countDocuments(query)
-    ]);
-
-    return NextResponse.json({
-      posts,
-      total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page
-    });
+    return NextResponse.json({ posts });
   } catch (error) {
+    console.error('Error fetching posts:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Failed to fetch posts' },
       { status: 500 }
     );
   }
@@ -66,20 +37,21 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession();
-    
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectDB();
-    
     const body = await request.json();
+
+    // Create new post
     const post = await Post.create(body);
 
-    return NextResponse.json(post);
+    return NextResponse.json(post, { status: 201 });
   } catch (error: any) {
+    console.error('Error creating post:', error);
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
+      { error: error.message || 'Failed to create post' },
       { status: 500 }
     );
   }

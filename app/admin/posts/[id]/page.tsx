@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import RichTextEditor from '@/components/RichTextEditor';
+import AuthCheck from '@/components/AuthCheck';
 
 interface PostData {
   _id?: string;
@@ -15,9 +16,10 @@ interface PostData {
   featuredImage?: string;
 }
 
-export default function PostEditor({ params }: { params: { id: string } }) {
+export default function PostEditor({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const isNewPost = params.id === 'new';
+  const { id } = use(params);
+  const isNewPost = id === 'new';
   const [loading, setLoading] = useState(!isNewPost);
   const [saving, setSaving] = useState(false);
   const [post, setPost] = useState<PostData>({
@@ -33,11 +35,11 @@ export default function PostEditor({ params }: { params: { id: string } }) {
     if (!isNewPost) {
       fetchPost();
     }
-  }, [params.id]);
+  }, [id]);
 
   const fetchPost = async () => {
     try {
-      const res = await fetch(`/api/admin/posts/${params.id}`);
+      const res = await fetch(`/api/admin/posts/${id}`);
       const data = await res.json();
       setPost(data);
     } catch (error) {
@@ -54,7 +56,7 @@ export default function PostEditor({ params }: { params: { id: string } }) {
     try {
       const url = isNewPost 
         ? '/api/admin/posts' 
-        : `/api/admin/posts/${params.id}`;
+        : `/api/admin/posts/${id}`;
       
       const method = isNewPost ? 'POST' : 'PUT';
       

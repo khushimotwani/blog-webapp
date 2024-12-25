@@ -3,26 +3,20 @@ import mongoose from 'mongoose';
 const PostSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, 'Please provide a title for this post.'],
-    maxlength: [60, 'Title cannot be more than 60 characters'],
+    required: [true, 'Please provide a title'],
   },
   slug: {
     type: String,
-    required: true,
+    required: [true, 'Please provide a slug'],
     unique: true,
   },
   content: {
     type: String,
-    required: [true, 'Please provide the content for this post.'],
+    required: [true, 'Please provide content'],
   },
   excerpt: {
     type: String,
-    required: [true, 'Please provide a short excerpt for this post.'],
-    maxlength: [200, 'Excerpt cannot be more than 200 characters'],
-  },
-  featuredImage: {
-    type: String,
-    required: false,
+    required: [true, 'Please provide an excerpt'],
   },
   tags: [{
     type: String,
@@ -32,6 +26,9 @@ const PostSchema = new mongoose.Schema({
     enum: ['draft', 'published'],
     default: 'draft',
   },
+  featuredImage: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -39,7 +36,7 @@ const PostSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
 export default mongoose.models.Post || mongoose.model('Post', PostSchema); 
