@@ -35,8 +35,8 @@ export default function CommentsList({ postId }: CommentsListProps) {
     fetchComments();
   }, [postId]);
 
-  const addNewComment = (comment: Comment) => {
-    setComments(prevComments => [comment, ...prevComments]);
+  const handleCommentSubmitted = () => {
+    fetchComments(); // Refresh comments after new submission
   };
 
   if (loading) {
@@ -49,7 +49,7 @@ export default function CommentsList({ postId }: CommentsListProps) {
 
   return (
     <div className="space-y-6">
-      <CommentForm postId={postId} onCommentSubmitted={addNewComment} />
+      <CommentForm postId={postId} onCommentSubmitted={handleCommentSubmitted} />
       
       <div className="space-y-6">
         {comments.length === 0 ? (

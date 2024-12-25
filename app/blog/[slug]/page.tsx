@@ -3,7 +3,6 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import CommentsList from '@/components/CommentsList';
-import CommentForm from '@/components/CommentForm';
 
 interface BlogPostProps {
   params: Promise<{ slug: string }>;
@@ -71,7 +70,6 @@ export default function BlogPost({ params }: BlogPostProps) {
           <div className="mt-12 space-y-8">
             <h2 className="text-2xl font-bold">Comments</h2>
             <CommentsList postId={post._id} />
-            <CommentForm postId={post._id} />
           </div>
         )}
       </div>
